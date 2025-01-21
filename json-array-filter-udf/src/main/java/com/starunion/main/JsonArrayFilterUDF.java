@@ -187,7 +187,15 @@ public class JsonArrayFilterUDF {
         return false;
     }
 
-    public Boolean evaluate(String jsonStr, String jsonPath, String subFieldType, Integer intervalType, Integer elementJudge, ArrayList<String> values) {
+    public Boolean evaluate(String jsonStr, String jsonPath, String subFieldType, Integer intervalType, Integer elementJudge, String value) {
+        ArrayList<String> values;
+        try {
+            values = objectMapper.readValue(value, new TypeReference<ArrayList<String>>() {});
+        } catch (Exception e) {
+            System.err.println("Failed to parse value as string array: " + e.getMessage());
+            return false;
+        }
+
         if (jsonStr == null || jsonStr.isEmpty()) {
             if (intervalType == 13) {
                 return true;
@@ -252,19 +260,13 @@ public class JsonArrayFilterUDF {
                     }
                     return false;
                 case "列表":
-//                    Boolean f;
-//                    if (jsonPath.matches("^\\$(\\[\\d+\\])?$")) {
-//                        f = true;
-//                    }
                     switch (elementJudge) {
                         case 1:
                             List<String> listStringResult = null;
                             List<List<String>> listOfListStringResult = null;
                             if (obj instanceof List<?>) {
                                 List<?> resultList = (List<?>) obj;
-                                // 检查第一个元素的类型以确定是否为嵌套列表
                                 if (!resultList.isEmpty() && resultList.get(0) instanceof List<?>) {
-                                    // 将结果转换为 List<List<String>>
                                     listOfListStringResult = objectMapper.convertValue(resultList, new TypeReference<List<List<String>>>() {
                                     });
                                     for (List<String> l1 : listOfListStringResult) {
@@ -273,7 +275,6 @@ public class JsonArrayFilterUDF {
                                         }
                                     }
                                 } else {
-                                    // 将结果转换为 List<String>
                                     listStringResult = objectMapper.convertValue(resultList, new TypeReference<List<String>>() {
                                     });
                                     if (ListCheck(listStringResult, values, elementJudge)) {
@@ -287,9 +288,7 @@ public class JsonArrayFilterUDF {
                             List<List<String>> listOfListStringResult2 = null;
                             if (obj instanceof List<?>) {
                                 List<?> resultList = (List<?>) obj;
-                                // 检查第一个元素的类型以确定是否为嵌套列表
                                 if (!resultList.isEmpty() && resultList.get(0) instanceof List<?>) {
-                                    // 将结果转换为 List<List<String>>
                                     listOfListStringResult2 = objectMapper.convertValue(resultList, new TypeReference<List<List<String>>>() {
                                     });
                                     for (List<String> l1 : listOfListStringResult2) {
@@ -298,7 +297,6 @@ public class JsonArrayFilterUDF {
                                         }
                                     }
                                 } else {
-                                    // 将结果转换为 List<String>
                                     listStringResult2 = objectMapper.convertValue(resultList, new TypeReference<List<String>>() {
                                     });
                                     if (ListCheck(listStringResult2, values, elementJudge)) {
@@ -326,12 +324,6 @@ public class JsonArrayFilterUDF {
                             return false;
                     }
                 default:
-//                    Boolean f = null;
-//                    int size = 0;
-//                    int satisfied = 0;
-//                    if (jsonPath.matches("^\\$(\\[\\d+\\])?$")) {
-//                        f = true;
-//                    }
                     if (intervalType == 13) {
                         if (obj instanceof List<?>) {
                             List<?> resultList = (List<?>) obj;
@@ -362,16 +354,15 @@ public class JsonArrayFilterUDF {
             if (intervalType == 13) {
                 return true;
             }
-            return false; // 如果没有任何匹配项，返回 false
+            return false;
         }
     }
 
-    public static void main(String[] args) {
-        String json = "{\"grow\":{\"attack\":8,\"defense\":6},\"info\":{\"uuid\":\"48754a01-0bc9-4bcc-81c2-33b98ba14118\",\"is_awaken\":false,\"awaken_level\":0,\"awaken_attr\":\"{}\",\"awaken_skills\":[]},\"equipments\":[{\"synthesis\":[\"冥虹镜芒\"],\"attr\":\"{\\\"attack\\\":15,\\\"defense\\\":10.235}\",\"position\":2,\"type\":\"头盔\",\"is_synthesis\":true},{\"position\":3,\"type\":\"铠甲\",\"is_synthesis\":true,\"synthesis\":[\"祭祀血袍\",\"女神之袍\",\"守护之铠\"],\"attr\":\"{\\\"defense\\\":10,\\\"attack\\\":3}\"}],\"attack\":3,\"defense\":9,\"is_lock\":true,\"update_time\":\"2024-11-02 19:41:25 \"}\n";
-        JsonArrayFilterUDF jsonArrayFilterUDF = new JsonArrayFilterUDF();
-        ArrayList<String> list2 = new ArrayList<>();
-        list2.add("红黑细长蚁001");
-        Boolean b = jsonArrayFilterUDF.evaluate("", "$", "列表", 13, 1, list2);
-        System.out.println(b);
-    }
+//    public static void main(String[] args) {
+//        String json = "{\"grow\":{\"attack\":8,\"defense\":6},\"info\":{\"uuid\":\"48754a01-0bc9-4bcc-81c2-33b98ba14118\",\"is_awaken\":false,\"awaken_level\":0,\"awaken_attr\":\"{}\",\"awaken_skills\":[]},\"equipments\":[{\"synthesis\":[\"冥虹镜芒\"],\"attr\":\"{\\\"attack\\\":15,\\\"defense\\\":10.235}\",\"position\":2,\"type\":\"头盔\",\"is_synthesis\":true},{\"position\":3,\"type\":\"铠甲\",\"is_synthesis\":true,\"synthesis\":[\"祭祀血袍\",\"女神之袍\",\"守护之铠\"],\"attr\":\"{\\\"defense\\\":10,\\\"attack\\\":3}\"}],\"attack\":3,\"defense\":9,\"is_lock\":true,\"update_time\":\"2024-11-02 19:41:25 \"}\n";
+//        JsonArrayFilterUDF jsonArrayFilterUDF = new JsonArrayFilterUDF();
+//        String value = "[\"红黑细长蚁001\"]"; // JSON array string
+//        Boolean b = jsonArrayFilterUDF.evaluate("", "$", "列表", 13, 1, value);
+//        System.out.println(b);
+//    }
 }
